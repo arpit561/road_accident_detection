@@ -10,6 +10,8 @@ import '../services/plus_code_service.dart';
 import '../services/live_tracking_service.dart';
 import '../services/socket_service.dart';
 
+import 'package:flutter/foundation.dart';
+
 enum EmergencyState { idle, countdown, alerting, completed, cancelled }
 
 class EmergencyService {
@@ -42,10 +44,10 @@ class EmergencyService {
     LocationService? locationService,
     SMSService? smsService,
     SocketService? socketService,
-  })  : _countdownManager = countdownManager ?? CountdownManager(),
-        _locationService = locationService ?? LocationService(),
-        _smsService = smsService ?? SMSService(),
-        _socketService = socketService ?? SocketService();
+  }) : _countdownManager = countdownManager ?? CountdownManager(),
+       _locationService = locationService ?? LocationService(),
+       _smsService = smsService ?? SMSService(),
+       _socketService = socketService ?? SocketService();
 
   /// Starts listening to the DetectionEngine streams for accident trigger
   void listen() {
@@ -67,7 +69,9 @@ class EmergencyService {
   Future<void> _handleAccidentDetected() async {
     // Cooldown/Concurrency check
     if (_isEmergencyActive) {
-      print('[Emergency] Emergency already active, ignoring duplicate trigger.');
+      print(
+        '[Emergency] Emergency already active, ignoring duplicate trigger.',
+      );
       return;
     }
 
@@ -99,7 +103,8 @@ class EmergencyService {
 
     if (position == null) {
       print(
-          '[Error][Emergency] Critical failure: Location unavailable, falling back gracefully.');
+        '[Error][Emergency] Critical failure: Location unavailable, falling back gracefully.',
+      );
     }
 
     final lat = position?.latitude ?? 0.0;
@@ -114,7 +119,16 @@ class EmergencyService {
     );
 
     // Compute Plus Code
-    final plusCode = PlusCodeService.encode(lat, lng);
+    // final plusCode = PlusCodeService.encode(lat, lng);
+
+    // Compute Plus Code; continue even if generation fails.
+    String plusCode = '';
+
+    try {
+      plusCode = PlusCodeService.encode(lat, lng);
+    } catch (e) {
+      debugPrint('[Emergency] Plus Code generation failed: $e');
+    }
 
     // Phase 3: Alert the command centre (socket) and emergency contacts (SMS)
     // in parallel with error isolation. The socket emit is the primary,
@@ -123,7 +137,13 @@ class EmergencyService {
     // incident id for live tracking.
     final results = await Future.wait([
       _safeSendSMS(lat, lng, confidence),
-      _safeCreateIncidentViaSocket(lat, lng, confidence, severityResult, plusCode),
+      _safeCreateIncidentViaSocket(
+        lat,
+        lng,
+        confidence,
+        severityResult,
+        plusCode,
+      ),
     ]);
 
     bool smsOk = results[0];
@@ -134,7 +154,9 @@ class EmergencyService {
     }
 
     if (smsOk || incidentOk) {
-      print('[Emergency] Alert triggered (SMS: $smsOk, CommandCentre: $incidentOk)');
+      print(
+        '[Emergency] Alert triggered (SMS: $smsOk, CommandCentre: $incidentOk)',
+      );
     } else {
       print('[Error][Emergency] Both SMS and command-centre dispatch failed');
     }
@@ -169,33 +191,41 @@ class EmergencyService {
   /// Creates the incident on the command centre over Socket.IO (primary
   /// path) and starts live location tracking with the authoritative id
   /// returned by the backend ACK. Never throws - returns false on failure.
-  Future<bool> _safeCreateIncidentViaSocket(double lat, double lng,
-      double confidence, SeverityResult severityResult, String plusCode) async {
+  Future<bool> _safeCreateIncidentViaSocket(
+    double lat,
+    double lng,
+    double confidence,
+    SeverityResult severityResult,
+    String plusCode,
+  ) async {
     try {
       final completer = Completer<bool>();
-      _socketService.emitCreateIncidentWithAck({
-        'latitude': lat,
-        'longitude': lng,
-        'confidence': confidence,
-        'severity': severityResult.label,
-        'severityScore': severityResult.score,
-        'plusCode': plusCode,
-      }, (ack) {
-        if (ack is Map && ack['success'] == true) {
-          final id = ack['incidentId'];
-          final queued = ack['queued'] == true;
-          // Start live tracking with the backend-assigned id. When the
-          // event was only queued (offline), tracking starts after the
-          // reconnect flush - the ACK then carries the real id, which the
-          // backend's incident_created broadcast mirrors.
-          if (!queued && id is String && id.isNotEmpty) {
-            LiveTrackingService().startTracking(id);
+      _socketService.emitCreateIncidentWithAck(
+        {
+          'latitude': lat,
+          'longitude': lng,
+          'confidence': confidence,
+          'severity': severityResult.label,
+          'severityScore': severityResult.score,
+          'plusCode': plusCode,
+        },
+        (ack) {
+          if (ack is Map && ack['success'] == true) {
+            final id = ack['incidentId'];
+            final queued = ack['queued'] == true;
+            // Start live tracking with the backend-assigned id. When the
+            // event was only queued (offline), tracking starts after the
+            // reconnect flush - the ACK then carries the real id, which the
+            // backend's incident_created broadcast mirrors.
+            if (!queued && id is String && id.isNotEmpty) {
+              LiveTrackingService().startTracking(id);
+            }
+            completer.complete(true);
+          } else {
+            completer.complete(false);
           }
-          completer.complete(true);
-        } else {
-          completer.complete(false);
-        }
-      });
+        },
+      );
       return await completer.future.timeout(
         const Duration(seconds: 8),
         onTimeout: () => false,
@@ -210,7 +240,8 @@ class EmergencyService {
   void cancelEmergency() {
     if (_currentState == EmergencyState.countdown) {
       _countdownManager.cancel();
-    } else if (_currentState == EmergencyState.alerting || _currentState == EmergencyState.completed) {
+    } else if (_currentState == EmergencyState.alerting ||
+        _currentState == EmergencyState.completed) {
       _cooldownTimer?.cancel();
       _isEmergencyActive = false;
       _emitState(EmergencyState.idle);
