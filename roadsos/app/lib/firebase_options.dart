@@ -41,45 +41,45 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDDkR24U6cJwppNnq3ATxFp3lrXu-n_JmI',
-    appId: '1:798127223821:web:81302c0cc86acce5ef9144',
-    messagingSenderId: '798127223821',
+    apiKey: 'IzaSyDDkR24U6cJwppNnq3ATxFp3lrXu-n_JmI',
+    appId: '1:98127223821:web:81302c0cc86acce5ef9144',
+    messagingSenderId: '79127223821',
     projectId: 'aaaa-da7c0',
     authDomain: 'aaaa-da7c0.firebaseapp.com',
     storageBucket: 'aaaa-da7c0.firebasestorage.app',
-    measurementId: 'G-EVVQ6K5RLX',
+    measurementId: 'G-EVQ6K5RLX',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBFvER2RjwId9Xj95s8f1H5mgWS_Y06Z84',
-    appId: '1:798127223821:android:9fd3b030b6ab441def9144',
-    messagingSenderId: '798127223821',
+    apiKey: 'IzaSyvER2RjwId9Xj95s8f1H5mgWS_Y06Z84',
+    appId: '1:7981272821:android:9fd3b030b6ab441def9144',
+    messagingSenderId: '79827223821',
     projectId: 'aaaa-da7c0',
     storageBucket: 'aaaa-da7c0.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBPDCzRoWDl8IYmD1hLHrE-IjtTFNaIb88',
-    appId: '1:798127223821:ios:c2fa8dfe3fd9ae59ef9144',
-    messagingSenderId: '798127223821',
+    apiKey: 'IzaSyBPDCzRoWDl8ID1hLHrE-IjtTFNaIb88',
+    appId: '1:798127223821:ios:ca8dfe3fd9ae59ef9144',
+    messagingSenderId: '7927223821',
     projectId: 'aaaa-da7c0',
     storageBucket: 'aaaa-da7c0.firebasestorage.app',
     iosBundleId: 'com.example.roadsosApp',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyBPDCzRoWDl8IYmD1hLHrE-IjtTFNaIb88',
-    appId: '1:798127223821:ios:c2fa8dfe3fd9ae59ef9144',
-    messagingSenderId: '798127223821',
+    apiKey: 'IzaSyBPDCzRoWDl8ImD1hLHrE-IjtTFNaIb88',
+    appId: '1:7981223821:ios:c2fa8dfe3fd9ae59ef9144',
+    messagingSenderId: '7927223821',
     projectId: 'aaaa-da7c0',
     storageBucket: 'aaaa-da7c0.firebasestorage.app',
     iosBundleId: 'com.example.roadsosApp',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyDDkR24U6cJwppNnq3ATxFp3lrXu-n_JmI',
-    appId: '1:798127223821:web:4cb151a7658e74d0ef9144',
-    messagingSenderId: '798127223821',
+    apiKey: 'IzaSyDDkR24cJwppNnq3ATxFp3lrXu-n_JmI',
+    appId: '1:7981272221:web:4cb151a7658e74d0ef9144',
+    messagingSenderId: '7927223821',
     projectId: 'aaaa-da7c0',
     authDomain: 'aaaa-da7c0.firebaseapp.com',
     storageBucket: 'aaaa-da7c0.firebasestorage.app',
